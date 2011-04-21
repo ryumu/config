@@ -13,9 +13,6 @@ setopt hist_save_no_dups
 
 bindkey -e
 
-#RVM
-[[ -s "/Users/ryumu/.rvm/scripts/rvm" ]] && source "/Users/ryumu/.rvm/scripts/rvm"
-
 
 autoload -U colors && colors
 
@@ -39,6 +36,10 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 zstyle ':completion:*:default' menu select
 
+#RVM
+[[ -s "/Users/ryumu/.rvm/scripts/rvm" ]] && source "/Users/ryumu/.rvm/scripts/rvm"
+
+
 autoload -Uz vcs_info
 zstyle ':vcs_info:*' formats '(%s)-[%b]'
 zstyle ':vcs_info:*' actionformats '(%s)-[%b|%a]'
@@ -48,22 +49,16 @@ precmd () {
     # for vcs_info
     LANG=en_US.UTF-8 vcs_info
     [[ -n "$vcs_info_msg_0_" ]] && psvar[1]="$vcs_info_msg_0_"
-
-    # for rvm
-    [[ -n "$rvm_ruby_string" ]] && psvar[2]="$rvm_ruby_string"
-
-    # for gemset
-    # ind=$(expr index $GEM_HOME $rvm_gemset_separator)
-    # if [ $ind -ne 0 ]; then
-    #     length="$(expr length $GEM_HOME)"
-    #     sub_length=`expr $length - $ind + 1`
-    #     gem_spec=`expr substr $GEM_HOME $ind $sub_length`
-    #     [[ -n "$psvar[2]" ]] && psvar[2]="$psvar[2]$gem_spec"
-    # fi
 }
 VCS_PROMPT="%1(v|%F{green} %1v%f|)"
-RUBY_PROMPT="%2(v| %U%B%F{magenta}(%2v)%f%b%u|)"
-PROMPT=$'%{\e[32m%}$LOGNAME@${WINDOW:+"[$WINDOW]"}%B:%b%{\e[m%}[%~]$RUBY_PROMPT$VCS_PROMPT\n%% '
+PROMPT=$'%{\e[32m%}$LOGNAME@${WINDOW:+"[$WINDOW]"}%B:%b%{\e[m%}[%~]$(rvm_info_for_prompt)$VCS_PROMPT\n%% '
+
+function rvm_info_for_prompt {
+  ruby_version=$(~/.rvm/bin/rvm-prompt)
+  if [ -n "$ruby_version" ]; then
+    echo "%F{magenta}($ruby_version)%f"
+  fi
+}
 
 
 # ^で上のディレクトリ
@@ -106,3 +101,7 @@ kterm*|xterm*)
     'di=34' 'ln=35' 'so=32' 'ex=31' 'bd=46;34' 'cd=43;34'
   ;;
 esac
+
+__rvm_project_rvmrc
+
+cd .
