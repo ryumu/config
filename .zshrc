@@ -38,27 +38,25 @@ zstyle ':completion:*:default' menu select
 
 #RVM
 [[ -s "/Users/ryumu/.rvm/scripts/rvm" ]] && source "/Users/ryumu/.rvm/scripts/rvm"
-
-
-autoload -Uz vcs_info
-zstyle ':vcs_info:*' formats '(%s)-[%b]'
-zstyle ':vcs_info:*' actionformats '(%s)-[%b|%a]'
-precmd () {
-    psvar=()
-
-    # for vcs_info
-    LANG=en_US.UTF-8 vcs_info
-    [[ -n "$vcs_info_msg_0_" ]] && psvar[1]="$vcs_info_msg_0_"
-}
-VCS_PROMPT="%1(v|%F{green} %1v%f|)"
-PROMPT=$'%{\e[32m%}$LOGNAME@${WINDOW:+"[$WINDOW]"}%B:%b%{\e[m%}[%~]$(rvm_info_for_prompt)$VCS_PROMPT\n%% '
-
 function rvm_info_for_prompt {
   ruby_version=$(~/.rvm/bin/rvm-prompt)
   if [ -n "$ruby_version" ]; then
     echo "%F{magenta}($ruby_version)%f"
   fi
 }
+
+autoload -Uz vcs_info
+zstyle ':vcs_info:*' formats '(%s)-[%b]'
+zstyle ':vcs_info:*' actionformats '(%s)-[%b|%a]'
+precmd_vcs_info() {
+  psvar=()
+  LANG=en_US.UTF-8 vcs_info
+  [[ -n "$vcs_info_msg_0_" ]] &&  psvar[1]="$vcs_info_msg_0_"
+}
+typeset -ga precmd_functions
+precmd_functions+=precmd_vcs_info
+PROMPT=$'%{\e[32m%}$LOGNAME@${WINDOW:+"[$WINDOW]"}%B:%b%{\e[m%}[%~]$(rvm_info_for_prompt)%1(v|%F{green}%1v%f|)\n%% '
+
 
 
 # ^で上のディレクトリ
